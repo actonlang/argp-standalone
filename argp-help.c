@@ -84,7 +84,7 @@ strchrnul(const char* s, int c);
 #endif /* !_LIBC */
 
 /* can't use macro due to double evaluation */
-static char*
+const char*
 dgettext_safe(const char* d, const char* m)
 {
     return m ? dgettext(d, m) : NULL;
