@@ -5,9 +5,27 @@ pub fn build(b: *std.build.Builder) void {
     const optimize = b.standardOptimizeOption(.{});
     const target = b.standardTargetOptions(.{});
 
-    const common_cflags: []const []const u8 = &.{
-        "-fno-sanitize=undefined",
+    var flags = std.ArrayList([]const u8).init(b.allocator);
+    defer flags.deinit();
+
+    flags.appendSlice(&.{
+        "-DHAVE_UNISTD_H",
+        "-DUNUSED="
+    }) catch |err| {
+        std.log.err("Error appending iterable dir: {}", .{err});
+        std.os.exit(1);
     };
+
+    if (target.isDarwin()) {
+        flags.appendSlice(&.{
+            "-DHAVE_DECL_FPUTS_UNLOCKED=0",
+            "-DHAVE_DECL_FWRITE_UNLOCKED=0",
+            "-DHAVE_DECL_PROGRAM_INVOCATION_NAME=0",
+        }) catch |err| {
+            std.log.err("Error appending iterable dir: {}", .{err});
+            std.os.exit(1);
+        };
+    }
 
     const lib = b.addStaticLibrary(.{
         .name = "argp",
@@ -15,7 +33,7 @@ pub fn build(b: *std.build.Builder) void {
         .optimize = optimize,
     });
 
-    const lib_sources = [_][]const u8{
+    lib.addCSourceFiles(&.{
         "argp-ba.c",
         "argp-eexst.c",
         "argp-fmtstream.c",
@@ -23,12 +41,14 @@ pub fn build(b: *std.build.Builder) void {
         "argp-parse.c",
         "argp-pv.c",
         "argp-pvh.c",
-    };
+        }, flags.items);
 
-    lib.addCSourceFiles(&lib_sources, common_cflags ++ [_][]const u8{
-        "-DHAVE_UNISTD_H",
-        "-DUNUSED="
-    });
+    if (target.isDarwin()) {
+        lib.addCSourceFiles(&.{
+            "strchrnul.c",
+            }, flags.items);
+    }
+
     lib.addIncludePath(".");
     lib.linkLibC();
 
