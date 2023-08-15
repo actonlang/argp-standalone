@@ -49,7 +49,7 @@ pub fn build(b: *std.build.Builder) void {
             }, flags.items);
     }
 
-    lib.addIncludePath(".");
+    lib.addIncludePath(.{ .path = "." });
     lib.linkLibC();
 
     b.installFile("argp.h", "include/argp.h");
