@@ -33,20 +33,26 @@ pub fn build(b: *std.build.Builder) void {
         .optimize = optimize,
     });
 
-    lib.addCSourceFiles(&.{
-        "argp-ba.c",
-        "argp-eexst.c",
-        "argp-fmtstream.c",
-        "argp-help.c",
-        "argp-parse.c",
-        "argp-pv.c",
-        "argp-pvh.c",
-        }, flags.items);
+    lib.addCSourceFiles(.{
+        .files = &.{
+            "argp-ba.c",
+            "argp-eexst.c",
+            "argp-fmtstream.c",
+            "argp-help.c",
+            "argp-parse.c",
+            "argp-pv.c",
+            "argp-pvh.c",
+        },
+        .flags = flags.items
+    });
 
     if (target.isDarwin()) {
-        lib.addCSourceFiles(&.{
-            "strchrnul.c",
-            }, flags.items);
+        lib.addCSourceFiles(.{
+            .files = &.{
+                "strchrnul.c",
+            },
+            .flags = flags.items
+        });
     }
 
     lib.addIncludePath(.{ .path = "." });
