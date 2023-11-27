@@ -16,9 +16,10 @@ pub fn build(b: *std.build.Builder) void {
         std.os.exit(1);
     };
 
-    if (target.isDarwin()) {
+    if (target.isDarwin() or target.isWindows()) {
         flags.appendSlice(&.{
             "-DHAVE_DECL_FPUTS_UNLOCKED=0",
+            "-DHAVE_DECL_FPUTC_UNLOCKED=0",
             "-DHAVE_DECL_FWRITE_UNLOCKED=0",
             "-DHAVE_DECL_PROGRAM_INVOCATION_NAME=0",
         }) catch |err| {
