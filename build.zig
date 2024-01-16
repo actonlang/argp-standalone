@@ -1,9 +1,10 @@
 const std = @import("std");
 const print = @import("std").debug.print;
 
-pub fn build(b: *std.build.Builder) void {
+pub fn build(b: *std.Build) void {
     const optimize = b.standardOptimizeOption(.{});
     const target = b.standardTargetOptions(.{});
+    const t = target.result;
 
     var flags = std.ArrayList([]const u8).init(b.allocator);
     defer flags.deinit();
@@ -16,7 +17,7 @@ pub fn build(b: *std.build.Builder) void {
         std.os.exit(1);
     };
 
-    if (target.isDarwin() or target.isWindows()) {
+    if (t.isDarwin() or t.os.tag == .windows) {
         flags.appendSlice(&.{
             "-DHAVE_DECL_FPUTS_UNLOCKED=0",
             "-DHAVE_DECL_FPUTC_UNLOCKED=0",
@@ -47,7 +48,7 @@ pub fn build(b: *std.build.Builder) void {
         .flags = flags.items
     });
 
-    if (target.isDarwin()) {
+    if (t.isDarwin()) {
         lib.addCSourceFiles(.{
             .files = &.{
                 "strchrnul.c",
