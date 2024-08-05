@@ -14,7 +14,7 @@ pub fn build(b: *std.Build) void {
         "-DUNUSED="
     }) catch |err| {
         std.log.err("Error appending iterable dir: {}", .{err});
-        std.os.exit(1);
+        std.posix.exit(1);
     };
 
     if (t.isDarwin() or t.os.tag == .windows) {
@@ -25,7 +25,7 @@ pub fn build(b: *std.Build) void {
             "-DHAVE_DECL_PROGRAM_INVOCATION_NAME=0",
         }) catch |err| {
             std.log.err("Error appending iterable dir: {}", .{err});
-            std.os.exit(1);
+            std.posix.exit(1);
         };
     }
 
@@ -57,7 +57,7 @@ pub fn build(b: *std.Build) void {
         });
     }
 
-    lib.addIncludePath(.{ .path = "." });
+    lib.addIncludePath(b.path("."));
     lib.linkLibC();
 
     b.installFile("argp.h", "include/argp.h");
