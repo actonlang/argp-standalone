@@ -60,6 +60,6 @@ pub fn build(b: *std.Build) void {
     lib.addIncludePath(b.path("."));
     lib.linkLibC();
 
-    b.installFile("argp.h", "include/argp.h");
+    lib.installHeader(b.path("argp.h"), "argp.h");
     b.installArtifact(lib);
 }
