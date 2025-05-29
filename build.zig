@@ -1,5 +1,16 @@
 const std = @import("std");
+const builtin = @import("builtin");
 const print = @import("std").debug.print;
+
+// Helper functions for Zig 0.13/0.14 compatibility
+fn targetIsDarwin(t: std.Target) bool {
+    const is_zig_0_14 = comptime builtin.zig_version.order(std.SemanticVersion.parse("0.14.0") catch unreachable) != .lt;
+    if (is_zig_0_14) {
+        return t.os.tag.isDarwin();
+    } else {
+        return t.isDarwin();
+    }
+}
 
 pub fn build(b: *std.Build) void {
     const optimize = b.standardOptimizeOption(.{});
@@ -17,7 +28,7 @@ pub fn build(b: *std.Build) void {
         std.posix.exit(1);
     };
 
-    if (t.isDarwin() or t.os.tag == .windows) {
+    if (targetIsDarwin(t) or t.os.tag == .windows) {
         flags.appendSlice(&.{
             "-DHAVE_DECL_FPUTS_UNLOCKED=0",
             "-DHAVE_DECL_FPUTC_UNLOCKED=0",
@@ -48,7 +59,7 @@ pub fn build(b: *std.Build) void {
         .flags = flags.items
     });
 
-    if (t.isDarwin()) {
+    if (targetIsDarwin(t)) {
         lib.addCSourceFiles(.{
             .files = &.{
                 "strchrnul.c",
