@@ -17,10 +17,10 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const t = target.result;
 
-    var flags = std.ArrayList([]const u8).init(b.allocator);
-    defer flags.deinit();
+    var flags = std.ArrayList([]const u8).empty;
+    defer flags.deinit(b.allocator);
 
-    flags.appendSlice(&.{
+    flags.appendSlice(b.allocator, &.{
         "-DHAVE_UNISTD_H",
         "-DUNUSED="
     }) catch |err| {
@@ -29,7 +29,7 @@ pub fn build(b: *std.Build) void {
     };
 
     if (targetIsDarwin(t) or t.os.tag == .windows) {
-        flags.appendSlice(&.{
+        flags.appendSlice(b.allocator, &.{
             "-DHAVE_DECL_FPUTS_UNLOCKED=0",
             "-DHAVE_DECL_FPUTC_UNLOCKED=0",
             "-DHAVE_DECL_FWRITE_UNLOCKED=0",
@@ -40,10 +40,13 @@ pub fn build(b: *std.Build) void {
         };
     }
 
-    const lib = b.addStaticLibrary(.{
+    const lib = b.addLibrary(.{
         .name = "argp",
-        .target = target,
-        .optimize = optimize,
+        .linkage = .static,
+        .root_module = b.createModule(.{
+            .target = target,
+            .optimize = optimize,
+        }),
     });
 
     lib.addCSourceFiles(.{
